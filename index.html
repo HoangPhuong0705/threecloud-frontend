@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreeCloud Photo Sharing</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f5f7fa; color: #333; padding-bottom: 60px; }
+        
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; }        
+        .logo { font-size: 20px; font-weight: bold; color: #333333; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .nav-links { display: flex; gap: 15px; align-items: center; }
+        .nav-btn { background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .nav-btn:hover { background: #1976D2; }
+        .nav-btn-outline { background: none; color: #2196F3; border: 2px solid #2196F3; }
+        .nav-btn-outline:hover { background: #e3f2fd; }
+
+        /* Avatar & Dropdown */
+        .user-menu-container { position: relative; display: inline-block; }
+        .nav-avatar { width: 38px; height: 38px; background: #ff5722; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 45px; background-color: white; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; overflow: hidden; z-index: 200; }
+        .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .dropdown-content a:hover { background-color: #f1f1f1; }
+        .dropdown-content .divider { height: 1px; background-color: #eee; }
+        .show { display: block; }
+
+        /* Container & Tabs */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; text-align: center; }
+        .user-header { margin-bottom: 25px; }
+
+        /* CẤU HÌNH LƯỚI GRID PHÓNG TO ẢNH RỘNG RÃI */
+        .gallery-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            gap: 25px; 
+            margin-top: 25px; 
+        }
+        
+        .img-card, .explore-img-card { 
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
+            transition: 0.3s; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 12px; 
+            border: 1px solid #e2e8f0;
+        }
+        .img-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .img-card img, .explore-img-card img { width: 100%; height: 190px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+        
+        .action-btns { display: flex; gap: 8px; margin-top: 10px; }
+        .action-btns button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        
+        .download-btn { background: #e3f2fd; color: #1e88e5; }
+        .download-btn:hover { background: #bbdefb; }
+        .delete-btn { background: #ffebee; color: #e53935; }
+        .delete-btn:hover { background: #ffcdd2; }
+
+        /* Explore Overlay */
+        .explore-img-card { padding: 0; height: 240px; }
+        .explore-img-card img { height: 100%; border-radius: 0; }
+        .explore-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 12px; display: flex; justify-content: space-between; align-items: flex-end; opacity: 0; transition: 0.3s; }
+        .explore-img-card:hover .explore-overlay { opacity: 1; }
+        .explore-user-block { display: flex; align-items: center; gap: 6px; color: white; }
+        .explore-avatar-mini { width: 24px; height: 24px; background: #4caf50; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        .explore-username { font-size: 12px; font-weight: bold; }
+        .explore-download-btn { background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        /* Vùng Upload Kéo Thả */
+        #drop-area { border: 2px dashed #2196F3; background: #fff; border-radius: 12px; padding: 40px 20px; width: 100%; max-width: 500px; margin: 20px auto; cursor: pointer; transition: 0.2s; }
+        #drop-area:hover { background: #f0f8ff; }
+        
+        /* Album Section */
+        .album-section { margin: 20px 0; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+        #album-list { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+
+        /* Zoom Modal */
+        .zoom-modal { display: none; position: fixed; z-index: 600; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); text-align: center; }
+        .zoom-modal img { max-width: 85%; max-height: 85%; margin-top: 4%; border-radius: 5px; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        /* Profile view/edit grid */
+        .profile-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; text-align: left; }
+        .profile-grid { display: grid; grid-template-columns: 120px 1fr; gap: 12px; margin-top: 15px; font-size: 15px; }
+        .profile-label { font-weight: bold; color: #666; }
+
+        /* CSS MODAL ĐĂNG NHẬP / ĐĂNG KÝ MỜ KÍNH CHỐNG ĐƠ CHUỘT */
+        .modal-auth { 
+            display: none; 
+            position: fixed; 
+            z-index: 500; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(4px); 
+            pointer-events: none; 
+        }
+
+        .modal-auth[style*="display: block"], .modal-auth[style*="display:block"] {
+            pointer-events: auto !important;
+        }
+
+        .modal-content { 
+            background: #ffffff; 
+            max-width: 400px; 
+            margin: 8% auto; 
+            padding: 35px 30px; 
+            border-radius: 16px; 
+            position: relative; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            text-align: left; 
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn { 
+            position: absolute; 
+            right: 20px; 
+            top: 15px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            color: #94a3b8; 
+            transition: 0.2s;
+        }
+        .close-btn:hover { color: #64748b; }
+
+        .modal-content h3 { 
+            margin-bottom: 25px; 
+            color: #1e1b4b; 
+            font-size: 22px; 
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .modal-content input, .modal-content select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin-bottom: 16px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            background-color: #f8fafc;
+            color: #334155;
+            transition: all 0.2s;
+        }
+
+        .modal-content input:focus, .modal-content select:focus {
+            border-color: #2196F3;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+            outline: none;
+        }
+
+        .modal-content button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #2196F3; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 15px; 
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px -1px rgba(33, 150, 243, 0.3);
+            transition: all 0.2s;
+        }
+        .modal-content button:hover { 
+            background: #1976D2; 
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px -1px rgba(33, 150, 243, 0.4);
+        }
+
+        /* KHUNG CHỨA Ô PASSWORD ĐỂ CHÈN CHỮ ẨN/HIỆN */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .password-wrapper input {
+            padding-right: 55px; 
+        }
+        .toggle-password-btn {
+            position: absolute;
+            right: 14px;
+            top: 13px;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: bold;
+            user-select: none;
+        }
+        .toggle-password-btn:hover {
+            color: #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo" onclick="showExplore()">☁️ ThreeCloud</div>
+        <div class="nav-links">
+            <button class="nav-btn nav-btn-outline" id="nav-btn-login" onclick="showLogin()">Đăng nhập</button>
+            <button class="nav-btn" id="nav-btn-register" onclick="showRegister()">Đăng ký</button>
+            
+            <div class="user-menu-container" id="user-menu" style="display: none;">
+                <div class="nav-avatar" id="nav-avatar-initial" onclick="toggleDropdown()">U</div>
+                <div class="dropdown-content" id="dropdown-menu">
+                    <a onclick="showExplore()">🌍 Khám phá cộng đồng</a>
+                    <a onclick="showGallery()">📁 Kho ảnh của tôi</a>
+                    <a onclick="showUpload()">📤 Tải ảnh lên</a>
+                    <a onclick="showProfile()">👤 Trang cá nhân</a>
+                    <div class="divider"></div>
+                    <a onclick="logout()" style="color: #e53935;">➡️ Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div id="explore-section" style="display: none;">
+            <div class="user-header">
+                <h2>🌍 Hình ảnh từ Cộng đồng</h2>
+                <p style="color: #666; margin-bottom: 20px;">Khám phá các bức ảnh đặc sắc được chia sẻ công khai.</p>
+            </div>
+
+            <div class="filter-container" style="max-width: 500px; margin: 20px auto; text-align: left; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                <label style="font-weight: bold; color: #1e1b4b; display: block; margin-bottom: 8px; font-size: 14px;">🔍 Tìm kiếm Thể loại ảnh cộng đồng:</label>
+                <input type="text" id="search-explore-category" oninput="filterExploreByCategory()" placeholder="Gõ thể loại muốn tìm (Ví dụ: Học tập, Thời trang, HUFLIT...)" style="width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; font-size: 14px; margin-bottom: 10px; outline: none;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px;">
+                    <span style="font-weight: bold; color: #64748b; align-self: center;">Gợi ý:</span>
+                    <button onclick="quickSearchExplore('Tất cả')" style="padding: 4px 10px; border-radius: 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #475569;">🌐 Tất cả</button>
+                    <button onclick="quickSearchExplore('Chưa xác định')" style="padding: 4px 10px; border-radius: 12px; background: #f1f5f9; border: none; cursor: pointer; font-weight: bold; color: #475569;">❓ Chưa xác định</button>
+                    <button onclick="quickSearchExplore('Giải trí')" style="padding: 4px 10px; border-radius: 12px; background: #ffe4e6; border: none; cursor: pointer; font-weight: bold; color: #e11d48;">🎉 Giải trí</button>
+                    <button onclick="quickSearchExplore('Học tập')" style="padding: 4px 10px; border-radius: 12px; background: #dbeafe; border: none; cursor: pointer; font-weight: bold; color: #2563eb;">📚 Học tập</button>
+                    <button onclick="quickSearchExplore('Du lịch')" style="padding: 4px 10px; border-radius: 12px; background: #fef9c3; border: none; cursor: pointer; font-weight: bold; color: #ca8a04;">✈️ Du lịch</button>
+                    <button onclick="quickSearchExplore('Đời sống')" style="padding: 4px 10px; border-radius: 12px; background: #dcfce7; border: none; cursor: pointer; font-weight: bold; color: #15803d;">🏠 Đời sống</button>
+                    <button onclick="quickSearchExplore('Mùa hè')" style="padding: 4px 10px; border-radius: 12px; background: #ffedd5; border: none; cursor: pointer; font-weight: bold; color: #ea580c;">☀️ Mùa hè</button>
+                </div>
+            </div>
+
+            <div id="explore-gallery" class="gallery-grid"></div>
+        </div>
+
+        <div id="gallery-section" style="display: none;">
+            <div class="user-header">
+                <h2>📁 Kho Lưu Trữ Của Tôi</h2>
+                <p>Quản lý hình ảnh và các album cá nhân của riêng bạn.</p>
+            </div>
+
+            <div class="filter-container" style="max-width: 500px; margin: 20px auto; text-align: left; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                <label style="font-weight: bold; color: #1e1b4b; display: block; margin-bottom: 8px; font-size: 14px;">🔍 Tìm kiếm Thể loại ảnh của tôi:</label>
+                <input type="text" id="search-gallery-category" oninput="filterMyGalleryByCategory()" placeholder="Gõ thể loại muốn tìm (Ví dụ: Chưa xác định, Đời sống, Idol...)" style="width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; font-size: 14px; margin-bottom: 10px; outline: none;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px;">
+                    <span style="font-weight: bold; color: #64748b; align-self: center;">Gợi ý:</span>
+                    <button onclick="quickSearchGallery('Tất cả')" style="padding: 4px 10px; border-radius: 12px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold; color: #475569;">🌐 Tất cả</button>
+                    <button onclick="quickSearchGallery('Chưa xác định')" style="padding: 4px 10px; border-radius: 12px; background: #f1f5f9; border: none; cursor: pointer; font-weight: bold; color: #475569;">❓ Chưa xác định</button>
+                    <button onclick="quickSearchGallery('Giải trí')" style="padding: 4px 10px; border-radius: 12px; background: #ffe4e6; border: none; cursor: pointer; font-weight: bold; color: #e11d48;">🎉 Giải trí</button>
+                    <button onclick="quickSearchGallery('Học tập')" style="padding: 4px 10px; border-radius: 12px; background: #dbeafe; border: none; cursor: pointer; font-weight: bold; color: #2563eb;">📚 Học tập</button>
+                    <button onclick="quickSearchGallery('Du lịch')" style="padding: 4px 10px; border-radius: 12px; background: #fef9c3; border: none; cursor: pointer; font-weight: bold; color: #ca8a04;">✈️ Du lịch</button>
+                    <button onclick="quickSearchGallery('Đời sống')" style="padding: 4px 10px; border-radius: 12px; background: #dcfce7; border: none; cursor: pointer; font-weight: bold; color: #15803d;">🏠 Đời sống</button>
+                    <button onclick="quickSearchGallery('Mùa hè')" style="padding: 4px 10px; border-radius: 12px; background: #ffedd5; border: none; cursor: pointer; font-weight: bold; color: #ea580c;">☀️ Mùa hè</button>
+                </div>
+            </div>
+
+            <div class="album-section">
+                <div style="display:flex; gap:10px; max-width:500px; margin:0 auto 15px auto;">
+                    <input type="text" id="new-album-name" placeholder="Nhập tên album mới muốn tạo..." style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+                    <button onclick="createAlbum()" style="padding:10px 20px; background:#4caf50; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">+ Tạo Album</button>
+                </div>
+                <h3 style="font-size:15px; color:#555; text-align:left; max-width:500px; margin:0 auto;">📁 Lọc Bộ Sưu Tập Theo Album:</h3>
+                <div id="album-list"></div>
+            </div>
+
+            <div id="gallery" class="gallery-grid"></div>
+        </div>
+
+        <div id="upload-section" style="display: none;">
+            <h2>📤 Tải Hình Ảnh </h2>
+            
+            <div id="drop-area">
+                <p id="drop-text" style="color:#555; font-weight:bold;">Kéo thả file ảnh vào đây hoặc click nút bên dưới</p>
+                <input type="file" id="fileElem" accept="image/jpeg, image/png" style="display:none">
+                <button id="upload-btn" class="nav-btn" style="margin-top:15px; background:#673ab7;">Chọn File Ảnh</button>
+            </div>
+
+            <div id="preview-container" style="display:none; margin: 25px 0; text-align: center;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 6px;">✨ Mẹo: Click trực tiếp vào tấm ảnh dưới đây để xem kích thước lớn:</p>
+                <img id="upload-preview" src="" style="max-width: 100%; max-height: 380px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.18); cursor: zoom-in; transition: 0.2s;" onclick="openZoom(this.src)">
+                <br>
+                <button onclick="removeSelectedFile()" style="margin-top:12px; padding:7px 20px; background:#f44336; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px; box-shadow: 0 2px 6px rgba(244,67,54,0.25);">Hủy chọn ảnh này ❌</button>
+            </div>
+
+            <div style="width: 100%; max-width: 500px; margin: 20px auto; text-align: left; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                <label style="font-weight: bold; color: #2196F3; display: block; margin-bottom: 8px; font-size: 14px;">➕ Tạo Album Mới Nhanh (Nếu chưa có):</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="upload-new-album-name" placeholder="Nhập tên album mới muốn tạo..." style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+                    <button onclick="createAlbumFromUpload()" style="padding:10px 18px; background:#2196F3; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; transition: 0.2s;">+ Tạo Album</button>
+                </div>
+            </div>
+
+            <div style="width: 100%; max-width: 500px; margin: 15px auto; text-align: left;">
+                <label style="font-weight: bold; color: #555; display: block; margin-bottom: 5px; font-size: 13px;">🏷️ Chọn Thể loại ảnh có sẵn:</label>
+                <select id="upload-category" style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-size: 14px;">
+                    <option value="Chưa xác định">❓ Chưa xác định</option>
+                    <option value="Giải trí">🎉 Giải trí</option>
+                    <option value="Học tập">📚 Học tập</option>
+                    <option value="Đời sống">🏠 Đời sống</option>
+                    <option value="Du lịch">✈️ Du lịch</option>
+                    <option value="Mùa hè">☀️ Mùa hè</option>
+                </select>
+            </div>
+
+            <div style="width: 100%; max-width: 500px; margin: 15px auto; text-align: left;">
+                <label style="font-weight: bold; color: #555; display: block; margin-bottom: 5px; font-size: 13px;">✨ Hoặc Tự nhập để tạo Thể loại mới (Tùy chọn):</label>
+                <input type="text" id="upload-custom-category" placeholder="Ví dụ: Phong cảnh, Thần tượng, Kỷ niệm, Thời trang..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; font-size: 14px; margin-bottom: 0; outline: none;">
+                <p style="font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic;">* Mẹo: Nếu bạn nhập ô này, hệ thống sẽ ưu tiên lấy thể loại tự tạo mới.</p>
+            </div>
+
+            <div style="width:100%; max-width:500px; margin: 15px auto; text-align:left;">
+                <label style="font-weight:bold; color:#555; display:block; margin-bottom:5px; font-size:13px;">📁 Đưa vào Album (Tùy chọn):</label>
+                <select id="album-select" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; background:white;"></select>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <label style="font-weight:bold; color:#444; cursor:pointer;">
+                    <input type="checkbox" id="is-public" checked style="transform: scale(1.2); margin-right: 6px;"> Chia sẻ công khai lên Cộng đồng
+                </label>
+            </div>
+
+            <div class="progress-container" style="display:none; max-width:500px; margin:15px auto; background:#eee; border-radius:10px; overflow:hidden;">
+                <div id="progress-bar" style="width:0%; background:#2196F3; color:white; padding:3px 0; font-size:12px; font-weight:bold;">0%</div>
+            </div>
+
+            <button id="submit-upload-btn" onclick="confirmAndUpload()" style="display:none; margin:20px auto; padding:12px 35px; background:#4caf50; color:white; border:none; border-radius:25px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.2);">Xác nhận tải ảnh lên 🚀</button>
+        </div>
+
+        <div id="profile-section" style="display: none;">
+            <div class="profile-card">
+                <div style="display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                    <div id="profile-initial" style="width:70px; height:70px; background:#ff5722; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold;">U</div>
+                    <div>
+                        <h2 id="profile-name" style="color:#333;">Tên tài khoản</h2>
+                        <p style="color:#777; font-size:14px; margin-top:4px;">📊 Thống kê: <span id="stat-images" style="font-weight:bold; color:#2196F3;">0</span> ảnh | <span id="stat-albums" style="font-weight:bold; color:#4caf50;">0</span> album</p>
+                    </div>
+                </div>
+
+                <div id="profile-view-mode">
+                    <h3>Thông Tin Tài Khoản</h3>
+                    <div class="profile-grid">
+                        <div class="profile-label">Họ và Tên:</div><div id="view-fullname">Chưa cập nhật</div>
+                        <div class="profile-label">Email:</div><div id="view-email">Chưa cập nhật</div>
+                        <div class="profile-label">Số điện thoại:</div><div id="view-phone">Chưa cập nhật</div>
+                        <div class="profile-label">Giới tính:</div><div id="view-gender">Nam</div>
+                    </div>
+                    <button onclick="toggleEditProfile(true)" style="margin-top:20px; padding:8px 16px; background:#2196F3; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Chỉnh sửa Profile & Đổi mật khẩu</button>
+                </div>
+
+                <div id="profile-edit-mode" style="display:none;">
+                    <h3>Chỉnh Sửa Thông Tin</h3>
+                    <div class="profile-grid" style="grid-template-columns: 140px 1fr; gap: 16px; align-items: center;">
+                        <div class="profile-label">Họ và Tên:</div>
+                        <input type="text" id="edit-fullname" placeholder="Nhập họ và tên..." style="margin:0; padding:10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc;">
+                        
+                        <div class="profile-label">Email:</div>
+                        <input type="email" id="edit-email" placeholder="Nhập địa chỉ email..." style="margin:0; padding:10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc;">
+                        
+                        <div class="profile-label">Số điện thoại:</div>
+                        <input type="text" id="edit-phone" placeholder="Nhập số điện thoại..." style="margin:0; padding:10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc;">
+                        
+                        <div class="profile-label">Giới tính:</div>
+                        <select id="edit-gender" style="margin:0; padding:10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc;">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="updateProfile()" style="margin-top:20px; padding:12px 24px; background:#4caf50; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; box-shadow: 0 4px 6px rgba(76,175,80,0.25); transition: 0.2s;">Cập nhật thông tin</button>
+
+                    <h3 style="margin-top:30px; border-top:1px solid #cbd5e1; padding-top:20px; color:#e53935;">Đổi Mật Khẩu</h3>
+                    <div class="profile-grid" style="grid-template-columns: 140px 1fr; gap: 16px; align-items: center;">
+                        <div class="profile-label">Mật khẩu cũ:</div>
+                        <div class="password-wrapper" style="position: relative; width: 100%;">
+                            <input type="password" id="password-current" placeholder="Nhập mật khẩu hiện tại..." style="margin:0; padding:10px; padding-right: 55px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; width: 100%;">
+                            <span class="toggle-password-btn" style="position: absolute; right: 14px; top: 12px; cursor: pointer; color: #64748b; font-size: 12px; font-weight: bold; user-select: none;" onclick="togglePasswordVisibility('password-current', this)">Hiện mật khẩu</span>
+                        </div>
+                        
+                        <div class="profile-label" style="align-self: flex-start; margin-top: 10px;">Mật khẩu mới:</div>
+                        <div class="password-wrapper" style="position: relative; width: 100%;">
+                            <input type="password" id="password-new" placeholder="Nhập mật khẩu mới..." style="margin:0; padding:10px; padding-right: 55px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; width: 100%;">
+                            <span class="toggle-password-btn" style="position: absolute; right: 14px; top: 12px; cursor: pointer; color: #64748b; font-size: 12px; font-weight: bold; user-select: none;" onclick="togglePasswordVisibility('password-new', this)">Hiện mật khẩu</span>
+                            <p style="font-size: 12px; color: #64748b; margin-top: 6px; font-style: italic; text-align: left;">* Yêu cầu: Tối thiểu 5 ký tự, chứa 1 chữ IN HOA và 1 ký tự đặc biệt.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 25px; display: flex; gap: 12px; justify-content: flex-start;">
+                        <button onclick="changePassword()" style="width: auto; padding: 12px 24px; background: #e53935; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(229,57,53,0.25);">Xác nhận đổi mật khẩu</button>
+                        <button onclick="toggleEditProfile(false)" style="width: auto; background: #64748b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;">⬅️ Quay lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="login-modal" class="modal-auth">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModals()">&times;</span>
+            <h3>Đăng Nhập Tài Khoản</h3>
+            <input type="text" id="username" placeholder="Tên đăng nhập...">
+            
+            <div class="password-wrapper">
+                <input type="password" id="password" placeholder="Mật khẩu...">
+                <span class="toggle-password-btn" onclick="togglePasswordVisibility('password', this)">Hiện mật khẩu</span>
+            </div>
+            
+            <button onclick="login()" style="margin-bottom: 15px;">ĐĂNG NHẬP</button>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 5px;">
+                Bạn chưa có tài khoản? <span onclick="switchLoginToRegister()" style="color: #2196F3; font-weight: bold; cursor: pointer; text-decoration: underline;">Đăng ký ngay</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal-auth">
+        <div class="modal-content" style="max-width: 420px; margin: 5% auto;">
+            <span class="close-btn" onclick="closeModals()">&times;</span>
+            <h3>Đăng Ký Thành Viên</h3>
+            <input type="text" id="reg-username" placeholder="Tên đăng nhập (Bắt buộc)...">
+            
+            <div class="password-wrapper">
+                <input type="password" id="reg-password" placeholder="Mật khẩu (Bắt buộc)...">
+                <span class="toggle-password-btn" onclick="togglePasswordVisibility('reg-password', this)">Hiện mật khẩu</span>
+            </div>
+            
+            <input type="text" id="reg-fullname" placeholder="Họ và tên (Tùy chọn)...">
+            <input type="email" id="reg-email" placeholder="Địa chỉ Email (Tùy chọn)...">
+            <input type="text" id="reg-phone" placeholder="Số điện thoại (Tùy chọn)...">
+            <select id="reg-gender">
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+            </select>
+            <button onclick="register()" style="margin-bottom: 15px;">ĐĂNG KÝ NGAY</button>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 5px;">
+                Đã có tài khoản rồi? <span onclick="switchRegisterToLogin()" style="color: #2196F3; font-weight: bold; cursor: pointer; text-decoration: underline;">Đăng nhập tại đây</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="image-modal" class="zoom-modal" onclick="this.style.display='none'">
+        <img id="img-zoomed" src="">
+        <p style="color:white; margin-top:10px; font-weight:bold;">Click vào vùng tối bất kỳ để đóng ảnh</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

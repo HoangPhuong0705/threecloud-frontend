@@ -1,0 +1,169 @@
+/* =======================================================
+   FILE CSS THREEC_LOUD - BẢN FORM ĐẦY ĐỦ THÔNG TIN (Layout Chuẩn)
+   ======================================================= */
+
+/* 1. RESET VÀ TỔNG THỂ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; padding-top: 80px; }
+
+/* 2. NAVBAR & NÚT ĐIỀU HƯỚNG */
+.navbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 50px; background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed; top: 0; width: 100%; z-index: 1000;
+}
+.logo { font-size: 1.5rem; font-weight: bold; color: #333333; letter-spacing: 1px;}
+.nav-links { display: flex; gap: 15px; align-items: center; }
+.nav-links a { text-decoration: none; color: #333; font-weight: 600; }
+
+.nav-btn-login, .nav-btn-register {
+    padding: 8px 18px; border: none; border-radius: 5px; 
+    cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s;
+}
+.nav-btn-login { background: #f0f0f0; color: #333; }
+.nav-btn-login:hover { background: #e0e0e0; }
+.nav-btn-register { background: #008CBA; color: white; }
+.nav-btn-register:hover { background: #007399; }
+
+/* 3. CONTAINER CHÍNH */
+.container { max-width: 900px; margin: 20px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+/* 4. KHU VỰC UPLOAD */
+.drop-zone { border: 3px dashed #008CBA; padding: 40px; text-align: center; border-radius: 15px; background-color: #fcfcfc; cursor: pointer; margin-bottom: 20px; transition: 0.4s; }
+.drop-zone.highlight { border-color: #4CAF50; background-color: #e8f5e9; }
+#upload-btn { padding: 10px 25px; background-color: #008CBA; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+/* 5. THƯ VIỆN ẢNH CÁ NHÂN */
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; margin-top: 20px; }
+.img-card { background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #e0e0e0; transition: transform 0.3s ease; text-align: center;}
+.img-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.img-card img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; cursor: pointer; margin-bottom: 10px;}
+.action-btns { display: flex; justify-content: space-between; gap: 5px; }
+.download-btn { padding: 5px 10px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-size: 12px; font-weight: bold; flex: 1; text-align: center; cursor: pointer; border: none; }
+.delete-btn { padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; flex: 1;}
+
+/* 6. MODAL AUTH (Lớp phủ mờ nền sau) */
+.modal-auth { 
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5); 
+}
+
+/* Hộp thoại nội dung trắng ở giữa màn hình */
+.modal-content-auth { 
+    background: white; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Luôn căn chuẩn chính giữa màn hình */
+    padding: 30px; 
+    width: 360px; /* Chiều rộng form đăng nhập mặc định */
+    border-radius: 12px; 
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3); 
+    box-sizing: border-box;
+}
+
+/* THIẾT KẾ GRID 2 CỘT CHO FORM ĐĂNG KÝ */
+#register-modal .modal-content-auth {
+    width: 540px; /* Nới rộng form đăng ký */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 15px;
+    text-align: left;
+}
+
+/* Ép các thành phần tiêu đề, nút bấm dàn hết chiều rộng 2 cột */
+#register-modal .modal-content-auth h2,
+#register-modal .modal-content-auth p,
+#register-modal .modal-content-auth button,
+#register-modal .modal-content-auth .password-wrapper,
+#register-modal .modal-content-auth #reg-username {
+    grid-column: 1 / -1; 
+}
+
+/* Định dạng các ô nhập liệu */
+.modal-content-auth input, .modal-content-auth select { 
+    width: 100%; 
+    padding: 11px; 
+    margin: 8px 0; 
+    border: 1px solid #ccc; 
+    border-radius: 6px; 
+    font-size: 14px;
+}
+
+.modal-content-auth button { 
+    width: 100%; 
+    padding: 12px; 
+    background: #008CBA; 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 15px;
+    margin-top: 12px;
+}
+.modal-content-auth button:hover { background: #007399; }
+
+/* Nút X đóng Modal góc phải trên cùng */
+.close-modal { 
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    cursor: pointer; 
+    font-size: 24px; 
+    color: #888; 
+    user-select: none;
+}
+.close-modal:hover { color: #000; }
+
+/* 7. TIẾN TRÌNH UPLOAD & ZOOM ẢNH */
+.progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.progress-bar { width: 0%; height: 25px; background-color: #4CAF50; text-align: center; color: white; line-height: 25px; font-size: 12px; }
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+.modal-content { margin: 5% auto; max-width: 85%; max-height: 80vh; border-radius: 5px; display: block;}
+.close-btn { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
+
+/* 8. PROFILE NGƯỜI DÙNG */
+.profile-container { max-width: 800px; margin: 30px auto; text-align: center; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+.profile-avatar { width: 80px; height: 80px; background-color: #333333; color: white; border-radius: 50%; font-size: 36px; font-weight: bold; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+.profile-stats { display: flex; justify-content: center; gap: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+.stat-box { padding: 15px 30px; border: 1px solid #eee; border-radius: 10px; min-width: 150px; }
+.stat-box h3 { font-size: 24px; color: #333; margin-bottom: 5px; }
+.stat-box p { color: #777; font-size: 14px; }
+
+/* 9. AVATAR & DROPDOWN NAVBAR */
+.user-menu-container { position: relative; display: inline-block; }
+.nav-avatar { width: 42px; height: 42px; background-color: #615c5c51; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; cursor: pointer; user-select: none; transition: 0.3s; }
+.nav-avatar:hover { background-color: #d95a1c; box-shadow: 0 2px 8px rgba(242, 107, 34, 0.4); }
+.dropdown-content { display: none; position: absolute; right: 0; top: 55px; background-color: #fff; min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-radius: 12px; z-index: 1001; overflow: hidden; border: 1px solid #eee; }
+.dropdown-content.show { display: block; animation: fadeIn 0.2s ease-in-out; }
+.dropdown-content a { color: #333; padding: 14px 20px; text-decoration: none; display: block; font-weight: 600; font-size: 14px; transition: 0.2s; }
+.dropdown-content a:hover { background-color: #f8f9fa; color: #005A9C; }
+.dropdown-content hr { border: 0; height: 1px; background: #eee; margin: 0; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 10. HIỆU ỨNG HOVER TRANG KHÁM PHÁ */
+.explore-img-card { background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #e0e0e0; transition: transform 0.3s ease; position: relative; overflow: hidden; }
+.explore-img-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.explore-img-card img { width: 100%; height: 280px; object-fit: cover; border-radius: 8px; cursor: pointer; display: block; }
+.explore-img-card .explore-overlay { position: absolute; bottom: 12px; left: 12px; right: 12px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.75)); padding: 30px 15px 15px 15px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 2; }
+.explore-img-card:hover .explore-overlay { opacity: 1; visibility: visible; }
+.explore-user-block { display: flex; align-items: center; gap: 8px; }
+.explore-avatar-mini { width: 30px; height: 30px; background-color: #f26b22; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.5); }
+.explore-username { font-size: 13px; font-weight: 600; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.explore-download-btn { padding: 6px 12px; background-color: rgba(255, 255, 255, 0.9); color: #333333; border: none; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.explore-download-btn:hover { background-color: #ffffff; transform: scale(1.05); }
+
+/* KHUNG BỌC MẬT KHẨU CÓ Ô CON MẮT */
+.password-wrapper { position: relative; width: 100%; }
+.password-wrapper input { width: 100% !important; box-sizing: border-box; padding-right: 45px; margin-bottom: 0 !important; }
+.toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 13px; color: #008CBA; z-index: 10; }
+.toggle-password:hover { opacity: 0.7; }
