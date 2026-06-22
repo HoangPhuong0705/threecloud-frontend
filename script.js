@@ -1,4 +1,4 @@
-const apiUrl = 'http://127.0.0.1:8000';
+const apiUrl = 'https://threecloud-backend.onrender.com';
 let currentAlbumId = null;
 let selectedFile = null; 
 
