@@ -185,6 +185,7 @@ function hideAllTabs() {
     sections.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
 }
 
+// Hàm dọn dẹp các thanh tìm kiếm
 function clearSearchInputs() {
     if(document.getElementById('search-gallery-category')) document.getElementById('search-gallery-category').value = "";
     if(document.getElementById('search-explore-category')) document.getElementById('search-explore-category').value = "";
@@ -452,7 +453,7 @@ function addImageToGallery(url, id, category, uploadedAt) {
     gallery.appendChild(div);
 }
 
-// ✨ CHỨC NĂNG XEM ẢNH LỚN (ZOOM) - BẢO MỆT CHẶN KHÁCH VÃNG LAI TỰ ĐỘNG
+// ✨ CHỨC NĂNG XEM ẢNH LỚN (ZOOM) - BẢO MẬT CHẶN KHÁCH VÃNG LAI TỰ ĐỘNG
 function openZoom(url) {
     const userId = localStorage.getItem('user_id');
     
@@ -476,7 +477,7 @@ async function deleteImage(id) {
     if (res.ok) { loadGallery(); loadUserProfile(); }
 }
 
-// ✨ CHỨC NĂNG TẢI ẢNH (DOWNLOAD) - TỰ ĐỘNG LƯU VỀ MÁY 100% & BẢO MỆT CHẶN KHÁCH VÃNG LAI
+// ✨ CHỨC NĂNG TẢI ẢNH (DOWNLOAD) - TỰ ĐỘNG LƯU VỀ MÁY 100% & BẢO MẬT CHẶN KHÁCH VÃNG LAI
 async function downloadImage(url, filename) {
     const userId = localStorage.getItem('user_id');
     
@@ -488,7 +489,7 @@ async function downloadImage(url, filename) {
     }
 
     try {
-        // Thực hiện Fetch bóc tách dữ liệu Blob để ép trình duyệt download file, không bị nhảy tab mới
+        // 🔥 FIX CHÍ MẠNG: Thực hiện Fetch kèm Header mode: 'cors' để ép S3 bắt buộc phân rã Blob
         const response = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!response.ok) throw new Error("Lỗi kết nối hoặc AWS S3 chặn CORS cấu hình");
         
@@ -508,7 +509,7 @@ async function downloadImage(url, filename) {
         document.body.removeChild(tempLink);
         window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-        console.warn("Đang kích hoạt phương án tải dự phòng do rào cản CORS: ", error);
+        console.warn("Đang kích hoạt phương án tải dự phòng do rào cản CORS S3: ", error);
         // Giải pháp rẽ nhánh dự phòng tối ưu: Tạo thẻ định tuyến ảo để ép lưu file trực tiếp
         const link = document.createElement('a');
         link.href = url;
@@ -539,6 +540,10 @@ async function loadExploreGallery() {
                     const firstLetter = uploaderName.charAt(0).toUpperCase();
                     const div = document.createElement('div');
                     div.className = 'explore-img-card'; 
+                    
+                    // Lấy chuẩn đuôi mở rộng file từ đường link S3 để giữ nguyên định dạng gốc (.jpg/.png) khi lưu
+                    const filename = img.url.substring(img.url.lastIndexOf('/') + 1);
+
                     div.innerHTML = `
                         <img src="${img.url}" onclick="openZoom('${img.url}')" loading="lazy">
                         <div class="explore-overlay">
@@ -550,7 +555,7 @@ async function loadExploreGallery() {
                                 <p style="margin-top: 5px;"><span style="background: rgba(255,255,255,0.25); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: bold;">🏷️ ${img.category || 'Chưa phân loại'}</span></p>
                                 <span style="color: #ccc; font-size: 10px;">📅 ${formatDate(img.uploaded_at)}</span>
                             </div>
-                            <button class="explore-download-btn" onclick="downloadImage('${img.url}', '${img.name}')">⬇️ Tải xuống</button>
+                            <button class="explore-download-btn" onclick="downloadImage('${img.url}', '${filename}')">⬇️ Tải xuống</button>
                         </div>
                     `;
                     exploreGallery.appendChild(div);
@@ -618,7 +623,6 @@ function quickSearchGallery(categoryName) {
     if (searchInput) { searchInput.value = categoryName === 'Tất cả' ? '' : categoryName; filterMyGalleryByCategory(); }
 }
 
-// Hàm tìm kiếm nhanh ở trang khám phá có bảo mật chặn khách vãng lai
 function quickSearchExplore(categoryName) {
     const searchInput = document.getElementById('search-explore-category');
     if (searchInput) { searchInput.value = categoryName === 'Tất cả' ? '' : categoryName; filterExploreByCategory(); }
