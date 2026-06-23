@@ -477,48 +477,23 @@ async function deleteImage(id) {
     if (res.ok) { loadGallery(); loadUserProfile(); }
 }
 
-// ✨ CHỨC NĂNG TẢI ẢNH (DOWNLOAD) - TỰ ĐỘNG LƯU VỀ MÁY 100% & BẢO MẬT CHẶN KHÁCH VÃNG LAI
-async function downloadImage(url, filename) {
+// ✨ CHỨC NĂNG TẢI ẢNH (DOWNLOAD) - ĐÃ FIX QUA API TRUNG CHUYỂN BACKEND 100% TỰ ĐỘNG LƯU VỀ MÁY
+function downloadImage(url, filename) {
     const userId = localStorage.getItem('user_id');
     
-    // Nếu chưa đăng nhập (Khách vãng lai) -> Chặn hành động tải ảnh, mở popup Đăng nhập
+    // 1. Nếu chưa đăng nhập (Khách vãng lai) -> Chặn hành động tải ảnh, mở popup Đăng nhập
     if (!userId) {
         alert("Tính năng tải ảnh xuống máy chỉ dành cho thành viên. Vui lòng đăng nhập! 🔒");
         showLogin();
         return;
     }
 
-    try {
-        // 🔥 FIX CHÍ MẠNG: Thực hiện Fetch kèm Header mode: 'cors' để ép S3 bắt buộc phân rã Blob
-        const response = await fetch(url, { method: 'GET', mode: 'cors' });
-        if (!response.ok) throw new Error("Lỗi kết nối hoặc AWS S3 chặn CORS cấu hình");
-        
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const tempLink = document.createElement('a');
-        tempLink.href = blobUrl;
-        
-        // Đặt tên file ảnh tải về tự động, nếu không có tên thì tự đặt tên kèm chuỗi thời gian ngẫu nhiên
-        tempLink.download = filename || `ThreeCloud_Photo_${Date.now()}.jpg`;
-        
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        
-        // Giải phóng bộ nhớ đệm và dọn rác thẻ DOM ẩn sau khi tải xong
-        document.body.removeChild(tempLink);
-        window.URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-        console.warn("Đang kích hoạt phương án tải dự phòng do rào cản CORS S3: ", error);
-        // Giải pháp rẽ nhánh dự phòng tối ưu: Tạo thẻ định tuyến ảo để ép lưu file trực tiếp
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.download = filename || 'threecloud-photo.jpg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    // 2. Bảo Backend đứng ra tải hộ từ S3 về để ép trình duyệt phải bật hộp thoại Download trực tiếp
+    // Lệnh encodeURIComponent giúp mã hóa đường link URL truyền qua tham số không bị lỗi ký tự đặc biệt
+    const downloadUrl = `${apiUrl}/proxy-download/?url=${encodeURIComponent(url)}`;
+    
+    // 3. Kích hoạt luồng tải xuống trực tiếp trên tab hiện tại, không bị nhảy sang trang mới nữa
+    window.location.href = downloadUrl;
 }
 
 // =========================================================
